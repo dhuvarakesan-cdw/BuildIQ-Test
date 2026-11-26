@@ -2,7 +2,15 @@ import { useState } from 'react';
 
 import AppShell from './components/AppShell.jsx';
 
-const taskViews = {
+type TaskViewId = 'dashboard' | 'tasks' | 'create';
+
+type TaskView = {
+  title: string;
+  lead: string;
+  detail: string;
+};
+
+const taskViews: Record<TaskViewId, TaskView> = {
   dashboard: {
     title: 'Dashboard',
     lead: 'A focused summary for today, built around tasks saved only on this device.',
@@ -21,7 +29,7 @@ const taskViews = {
 };
 
 export default function App() {
-  const [activeTarget, setActiveTarget] = useState('dashboard');
+  const [activeTarget, setActiveTarget] = useState<TaskViewId>('dashboard');
   const currentView = taskViews[activeTarget];
 
   return (
