@@ -1,46 +1,180 @@
 import { useState } from 'react';
 
-import AppShell from './components/AppShell.jsx';
+type NavigationTarget = 'today' | 'tasks' | 'localData';
+type ThemeMode = 'light' | 'calm';
+type Persona = 'planner' | 'caretaker' | 'student';
 
-type TaskViewId = 'dashboard' | 'tasks' | 'create';
-
-type TaskView = {
-  title: string;
-  lead: string;
-  detail: string;
+type NavigationItem = {
+  id: NavigationTarget;
+  label: string;
+  description: string;
 };
 
-const taskViews: Record<TaskViewId, TaskView> = {
-  // Source boundaries are prepared for UI, hooks, domain, and storage code.
-  dashboard: {
-    title: 'Dashboard',
-    lead: 'A focused summary for today, built around tasks saved only on this device.',
-    detail: 'Upcoming work, completed counts, and local progress can live here as the task model grows.',
+type TaskHighlight = {
+  label: string;
+  value: string;
+};
+
+const navigationItems: NavigationItem[] = [
+  {
+    id: 'today',
+    label: 'Today',
+    description: 'Current focus and quick task review',
   },
-  tasks: {
-    title: 'Task list',
-    lead: 'A local list area for saved browser tasks.',
-    detail: 'The shell is ready for filtering, reviewing, and updating tasks without adding a backend.',
+  {
+    id: 'tasks',
+    label: 'Tasks',
+    description: 'Task placeholder ready for local entries',
   },
-  create: {
-    title: 'Create task',
-    lead: 'A task creation area for this browser.',
-    detail: 'Future form fields can attach to localStorage while keeping the page navigation intact.',
+  {
+    id: 'localData',
+    label: 'Local data',
+    description: 'Browser-only storage status and controls',
   },
+];
+
+const taskHighlights: TaskHighlight[] = [
+  { label: 'Pinned tasks', value: '0' },
+  { label: 'Due today', value: '0' },
+  { label: 'Stored locally', value: 'Ready' },
+];
+
+const personaLabels: Record<Persona, string> = {
+  planner: 'Planner',
+  caretaker: 'Caretaker',
+  student: 'Student',
 };
 
 export default function App() {
-  const [activeTarget, setActiveTarget] = useState<TaskViewId>('dashboard');
-  const currentView = taskViews[activeTarget];
+  const [activeTarget, setActiveTarget] = useState<NavigationTarget>('today');
+  const [persona, setPersona] = useState<Persona>('planner');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const activeNavigation = navigationItems.find(
+    (item) => item.id === activeTarget,
+  );
+  const currentSectionTitle = activeNavigation?.label ?? 'Today';
 
   return (
-    <AppShell activeTarget={activeTarget} onNavigate={setActiveTarget}>
-      <section className="view-panel" aria-labelledby="current-view-heading">
-        <p className="view-kicker">Frontend only</p>
-        <h2 id="current-view-heading">{currentView.title}</h2>
-        <p className="view-lead">{currentView.lead}</p>
-        <p>{currentView.detail}</p>
-      </section>
-    </AppShell>
+    <div className="app-shell" data-theme={themeMode}>
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+
+      <header className="topbar" aria-label="Application header">
+        <div className="brand-lockup" aria-label="Daily Tasks home">
+          <span className="brand-mark" aria-hidden="true">
+            DT
+          </span>
+          <div>
+            <p className="brand-kicker">Local task tracker</p>
+            <h1>Daily Tasks</h1>
+          </div>
+        </div>
+
+        <div className="topbar-controls" aria-label="Shell preferences">
+          <label className="field-control" htmlFor="persona-select">
+            <span>Persona</span>
+            <select
+              id="persona-select"
+              value={persona}
+              onChange={(event) => setPersona(event.target.value as Persona)}
+            >
+              <option value="planner">{personaLabels.planner}</option>
+              <option value="caretaker">{personaLabels.caretaker}</option>
+              <option value="student">{personaLabels.student}</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="theme-toggle"
+            aria-pressed={themeMode === 'calm'}
+            onClick={() => {
+              setThemeMode((current) => (current === 'light' ? 'calm' : 'light'));
+            }}
+          >
+            Calm theme
+          </button>
+        </div>
+      </header>
+
+      <div className="shell-layout">
+        <aside className="sidebar" aria-label="Workspace navigation">
+          <nav className="primary-nav" aria-label="Primary">
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className="nav-button"
+                aria-current={activeTarget === item.id ? 'page' : undefined}
+                onClick={() => setActiveTarget(item.id)}
+              >
+                <span className="nav-label">{item.label}</span>
+                <span className="nav-description">{item.description}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        <main
+          id="main-content"
+          className="main-content"
+          aria-labelledby="main-heading"
+          tabIndex={-1}
+        >
+          <section className="hero-panel" aria-labelledby="main-heading">
+            <p className="section-kicker">{personaLabels[persona]} workspace</p>
+            <h2 id="main-heading">{currentSectionTitle}</h2>
+            <p className="section-lead">
+              A responsive shell for local task planning, with room for task screens
+              and storage controls as the app grows.
+            </p>
+          </section>
+
+          <section
+            className="content-grid"
+            aria-label="Task and local data placeholders"
+          >
+            <article
+              className="placeholder-card"
+              aria-labelledby="task-placeholder-heading"
+            >
+              <p className="section-kicker">Task placeholder</p>
+              <h3 id="task-placeholder-heading">Tasks will appear here</h3>
+              <p>
+                This area is reserved for creating, reviewing, and completing tasks
+                without adding accounts or a backend service.
+              </p>
+
+              <dl className="task-metrics" aria-label="Current task summary">
+                {taskHighlights.map((item) => (
+                  <div key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </article>
+
+            <article
+              className="placeholder-card"
+              aria-labelledby="local-data-heading"
+            >
+              <p className="section-kicker">Local data placeholder</p>
+              <h3 id="local-data-heading">Browser storage only</h3>
+              <p>
+                Saved task data will stay on this device through browser storage.
+                Clearing site data will remove the saved task list.
+              </p>
+
+              <div className="storage-status" role="status" aria-live="polite">
+                <span aria-hidden="true" />
+                Local storage connection ready
+              </div>
+            </article>
+          </section>
+        </main>
+      </div>
+    </div>
   );
 }
