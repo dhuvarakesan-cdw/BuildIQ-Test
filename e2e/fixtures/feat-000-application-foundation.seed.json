@@ -1,0 +1,100 @@
+{
+  "featureId": "FEAT-000",
+  "name": "Application Foundation",
+  "app": {
+    "id": "APP-PTMA",
+    "name": "Daily Tasks",
+    "description": "Personal Task Management Application foundation",
+    "route": {
+      "id": "ROUTE-001",
+      "path": "/"
+    },
+    "storage": {
+      "type": "localStorage",
+      "key": "ptma.tasks.v1",
+      "schemaVersion": 1,
+      "prototypeNote": "Tasks stay in this browser with localStorage and clearing browser storage removes saved tasks."
+    },
+    "runtime": {
+      "frontend": "React + Vite + JavaScript + CSS + React Hooks",
+      "backend": "none"
+    }
+  },
+  "tasks": [],
+  "approvedStatuses": [
+    "Pending",
+    "In Progress",
+    "Completed"
+  ],
+  "approvedPriorities": [
+    "",
+    "Low",
+    "Medium",
+    "High"
+  ],
+  "routeLabels": [
+    {
+      "id": "dashboard",
+      "label": "Dashboard"
+    },
+    {
+      "id": "tasks",
+      "label": "Task list"
+    },
+    {
+      "id": "create",
+      "label": "Create task"
+    }
+  ],
+  "contexts": [
+    {
+      "id": "CTX-FEAT-000-SHELL-NAVIGATION",
+      "description": "Empty local task state with the application shell on the root route.",
+      "uses": {
+        "appId": "APP-PTMA",
+        "routeId": "ROUTE-001",
+        "routeLabelIds": [
+          "dashboard",
+          "tasks",
+          "create"
+        ],
+        "taskCount": 0
+      }
+    },
+    {
+      "id": "CTX-FEAT-000-APPROVED-TASK-VALUES",
+      "description": "Approved status and priority vocabulary for task records.",
+      "uses": {
+        "statuses": [
+          "Pending",
+          "In Progress",
+          "Completed"
+        ],
+        "priorities": [
+          "",
+          "Low",
+          "Medium",
+          "High"
+        ]
+      }
+    },
+    {
+      "id": "CTX-FEAT-000-BUILD-TEST-STRUCTURE",
+      "description": "Frontend application structure expected by the foundation.",
+      "uses": {
+        "frontendRoot": "frontend",
+        "requiredFiles": [
+          "frontend/package.json",
+          "frontend/vite.config.js",
+          "frontend/index.html",
+          "frontend/src/main.jsx",
+          "frontend/src/App.jsx",
+          "frontend/src/components/AppShell.jsx",
+          "frontend/src/domain/taskModel.js",
+          "frontend/jest.config.cjs",
+          "frontend/src/test/setup.js"
+        ]
+      }
+    }
+  ]
+}
