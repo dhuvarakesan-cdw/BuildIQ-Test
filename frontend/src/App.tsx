@@ -11,6 +11,7 @@ type TaskView = {
 };
 
 const taskViews: Record<TaskViewId, TaskView> = {
+  // Source boundaries are prepared for UI, hooks, domain, and storage code.
   dashboard: {
     title: 'Dashboard',
     lead: 'A focused summary for today, built around tasks saved only on this device.',
