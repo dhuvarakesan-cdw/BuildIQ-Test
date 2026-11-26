@@ -1,0 +1,106 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Caches
+.cache/
+.eslintcache
+.vite/
+.jest-cache/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Reports and coverage
+coverage/
+*.lcov
+eslint-report.json
+jest.json
+jest-coverage.json
+semgrep-report.json
+issues.json
+
+# Local data and environments
+*.db
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
+
+# Logs and OS/editor files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.dev.example
+
+# Validation artifacts owned by the BuildIQ harness
+issues.json
+*-current.json
+eslint-report.json
+ruff-report.json
+jest.json
+pytest.json
+jest-coverage.json
+pytest-coverage.json
+semgrep-report.json
+bandit-report.json
+code-review-report.json
+
+# JavaScript dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+.npm/
+.vite/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python caches, virtual environments and local runtime files
+__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pytype/
+.coverage
+.coverage.*
+htmlcov/
+*.db
+*.sqlite
+*.sqlite3
+
+# Backend process/runtime artifacts
+*.pid
+*.log
