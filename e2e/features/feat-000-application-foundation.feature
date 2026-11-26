@@ -1,20 +1,29 @@
 Feature: FEAT-000 Application Foundation
 
   @FEAT-000 @FAC-001
-  Scenario: Shell navigation exposes the foundation views
-    Given seed context CTX-FEAT-000-SHELL-NAVIGATION
-    When the application opens at route ROUTE-001
-    Then the shell navigation shows Dashboard, Task list, and Create task
+  Scenario: Static React application opens from the root route
+    Given the application foundation seed data is available
+    When a visitor opens the root application route
+    Then the static Vite React application shell is shown
+    And the shell is mounted through the TypeScript application entry point
 
   @FEAT-000 @FAC-002
-  Scenario: Task values use the approved foundation vocabulary
-    Given seed context CTX-FEAT-000-APPROVED-TASK-VALUES
-    When the foundation task model is available
-    Then the approved statuses are Pending, In Progress, and Completed
-    Then the approved priorities are Low, Medium, High, and blank
+  Scenario: Browser-only foundation avoids remote application services
+    Given the application foundation seed data is available
+    When a visitor uses the foundation shell
+    Then no backend service, authentication, user account, analytics, or telemetry flow is required
+    And the experience remains a local browser-only application
 
   @FEAT-000 @FAC-003
-  Scenario: Build and test structure is present for the frontend application
-    Given seed context CTX-FEAT-000-BUILD-TEST-STRUCTURE
-    When the frontend project files are inspected
-    Then the Vite application shell and Jest test structure are present
+  Scenario: Source boundary areas are ready for future feature work
+    Given the application foundation seed data is available
+    When the foundation source structure is reviewed
+    Then the shell has dedicated areas for components, hooks, domain utilities, and storage adapters
+    And each area is available as a separate application concern
+
+  @FEAT-000 @FAC-004
+  Scenario: Responsive accessible shell supports keyboard and viewport use
+    Given the application foundation seed data is available
+    When a visitor navigates the shell on desktop and mobile viewports
+    Then the skip link, topbar, and main landmark are available to keyboard users
+    And the responsive layout remains usable without horizontal scrolling
