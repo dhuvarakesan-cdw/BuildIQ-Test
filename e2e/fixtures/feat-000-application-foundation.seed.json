@@ -1,100 +1,148 @@
 {
   "featureId": "FEAT-000",
   "name": "Application Foundation",
-  "app": {
-    "id": "APP-PTMA",
-    "name": "Daily Tasks",
-    "description": "Personal Task Management Application foundation",
-    "route": {
-      "id": "ROUTE-001",
-      "path": "/"
+  "appShell": {
+    "id": "app-shell-foundation",
+    "name": "Application shell",
+    "entryPoint": "frontend/src/main.tsx",
+    "mountedComponent": "frontend/src/App.tsx",
+    "runtime": "Vite React TypeScript",
+    "accessibility": {
+      "skipLinkId": "skip-link-main-content",
+      "topbarId": "topbar-primary",
+      "mainLandmarkId": "main-content"
     },
-    "storage": {
-      "type": "localStorage",
-      "key": "ptma.tasks.v1",
-      "schemaVersion": 1,
-      "prototypeNote": "Tasks stay in this browser with localStorage and clearing browser storage removes saved tasks."
-    },
-    "runtime": {
-      "frontend": "React + Vite + JavaScript + CSS + React Hooks",
-      "backend": "none"
-    }
+    "shellAreaIds": [
+      "shell-area-components",
+      "shell-area-hooks",
+      "shell-area-domain",
+      "shell-area-storage"
+    ],
+    "serviceBoundaryIds": [
+      "boundary-no-backend",
+      "boundary-no-authentication",
+      "boundary-no-analytics",
+      "boundary-no-telemetry"
+    ]
   },
-  "tasks": [],
-  "approvedStatuses": [
-    "Pending",
-    "In Progress",
-    "Completed"
-  ],
-  "approvedPriorities": [
-    "",
-    "Low",
-    "Medium",
-    "High"
-  ],
-  "routeLabels": [
+  "supportedPersonas": [
     {
-      "id": "dashboard",
-      "label": "Dashboard"
+      "id": "persona-local-visitor",
+      "name": "Local visitor",
+      "description": "A visitor using the browser-only application without an account."
     },
     {
-      "id": "tasks",
-      "label": "Task list"
-    },
-    {
-      "id": "create",
-      "label": "Create task"
+      "id": "persona-keyboard-user",
+      "name": "Keyboard user",
+      "description": "A visitor who relies on keyboard navigation and page landmarks."
     }
   ],
-  "contexts": [
+  "rootRoute": {
+    "id": "route-root",
+    "path": "/",
+    "interfaceRef": "ROUTE-001",
+    "label": "Root application route"
+  },
+  "viewports": [
     {
-      "id": "CTX-FEAT-000-SHELL-NAVIGATION",
-      "description": "Empty local task state with the application shell on the root route.",
-      "uses": {
-        "appId": "APP-PTMA",
-        "routeId": "ROUTE-001",
-        "routeLabelIds": [
-          "dashboard",
-          "tasks",
-          "create"
-        ],
-        "taskCount": 0
-      }
+      "id": "viewport-desktop",
+      "name": "Desktop",
+      "width": 1280,
+      "height": 800
     },
     {
-      "id": "CTX-FEAT-000-APPROVED-TASK-VALUES",
-      "description": "Approved status and priority vocabulary for task records.",
-      "uses": {
-        "statuses": [
-          "Pending",
-          "In Progress",
-          "Completed"
-        ],
-        "priorities": [
-          "",
-          "Low",
-          "Medium",
-          "High"
-        ]
-      }
-    },
-    {
-      "id": "CTX-FEAT-000-BUILD-TEST-STRUCTURE",
-      "description": "Frontend application structure expected by the foundation.",
-      "uses": {
-        "frontendRoot": "frontend",
-        "requiredFiles": [
-          "frontend/package.json",
-          "frontend/vite.config.js",
-          "frontend/index.html",
-          "frontend/src/main.jsx",
-          "frontend/src/App.jsx",
-          "frontend/src/components/AppShell.jsx",
-          "frontend/src/domain/taskModel.js",
-          "frontend/jest.config.cjs",
-          "frontend/src/test/setup.js"
-        ]
-      }
+      "id": "viewport-mobile",
+      "name": "Mobile",
+      "width": 390,
+      "height": 844
     }
-  ]
+  ],
+  "sourceAreas": [
+    {
+      "id": "shell-area-components",
+      "name": "Components",
+      "path": "frontend/src/components/"
+    },
+    {
+      "id": "shell-area-hooks",
+      "name": "Hooks",
+      "path": "frontend/src/hooks/"
+    },
+    {
+      "id": "shell-area-domain",
+      "name": "Domain utilities",
+      "path": "frontend/src/domain/"
+    },
+    {
+      "id": "shell-area-storage",
+      "name": "Storage adapters",
+      "path": "frontend/src/storage/"
+    }
+  ],
+  "serviceBoundaries": [
+    {
+      "id": "boundary-no-backend",
+      "name": "No backend service",
+      "status": "absent"
+    },
+    {
+      "id": "boundary-no-authentication",
+      "name": "No authentication or user accounts",
+      "status": "absent"
+    },
+    {
+      "id": "boundary-no-analytics",
+      "name": "No analytics integration",
+      "status": "absent"
+    },
+    {
+      "id": "boundary-no-telemetry",
+      "name": "No remote telemetry integration",
+      "status": "absent"
+    }
+  ],
+  "scenarios": {
+    "FAC-001": {
+      "id": "scenario-static-react-root-load",
+      "name": "Static React application opens from the root route",
+      "recordIds": [
+        "app-shell-foundation",
+        "route-root",
+        "persona-local-visitor"
+      ]
+    },
+    "FAC-002": {
+      "id": "scenario-browser-only-service-boundaries",
+      "name": "Browser-only foundation avoids remote application services",
+      "recordIds": [
+        "app-shell-foundation",
+        "persona-local-visitor",
+        "boundary-no-backend",
+        "boundary-no-authentication",
+        "boundary-no-analytics",
+        "boundary-no-telemetry"
+      ]
+    },
+    "FAC-003": {
+      "id": "scenario-source-boundary-readiness",
+      "name": "Source boundary areas are ready for future feature work",
+      "recordIds": [
+        "app-shell-foundation",
+        "shell-area-components",
+        "shell-area-hooks",
+        "shell-area-domain",
+        "shell-area-storage"
+      ]
+    },
+    "FAC-004": {
+      "id": "scenario-responsive-accessible-shell",
+      "name": "Responsive accessible shell supports keyboard and viewport use",
+      "recordIds": [
+        "app-shell-foundation",
+        "persona-keyboard-user",
+        "viewport-desktop",
+        "viewport-mobile"
+      ]
+    }
+  }
 }
