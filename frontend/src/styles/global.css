@@ -1,0 +1,229 @@
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  overflow-x: hidden;
+  color: var(--color-text);
+  background: var(--color-canvas);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+button {
+  font: inherit;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2 {
+  color: var(--color-text);
+  letter-spacing: 0;
+}
+
+h1 {
+  margin-bottom: 0;
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  line-height: 1;
+}
+
+h2 {
+  margin-bottom: var(--space-3);
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  line-height: 1.05;
+}
+
+p {
+  color: var(--color-muted);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: var(--space-6);
+  width: min(1180px, calc(100% - 32px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: var(--space-6) 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 20;
+  transform: translateY(calc(-100% - var(--space-4)));
+  border-radius: var(--radius-panel);
+  background: var(--color-accent-strong);
+  color: #ffffff;
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.shell-sidebar,
+.view-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.shell-sidebar {
+  position: sticky;
+  top: var(--space-6);
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+  padding: var(--space-5);
+}
+
+.brand-kicker,
+.view-kicker {
+  margin-bottom: var(--space-2);
+  color: var(--color-accent-strong);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.primary-nav {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.nav-target {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-panel);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-weight: 800;
+  line-height: 1.1;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+}
+
+.nav-target:hover {
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+}
+
+.nav-target:focus-visible,
+.task-content:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.nav-target[aria-current="page"] {
+  background: var(--color-accent);
+  color: #ffffff;
+}
+
+.shell-workspace {
+  min-width: 0;
+}
+
+.storage-note {
+  margin-bottom: var(--space-4);
+  border: 1px solid #b7d8d4;
+  border-radius: var(--radius-panel);
+  background: #e8f6f4;
+  color: var(--color-accent-strong);
+  padding: var(--space-3) var(--space-4);
+}
+
+.task-content {
+  min-width: 0;
+}
+
+.view-panel {
+  min-height: 420px;
+  padding: clamp(1.25rem, 4vw, 3rem);
+}
+
+.view-lead {
+  max-width: 56rem;
+  color: var(--color-text);
+  font-size: 1.18rem;
+}
+
+.view-panel p:last-child {
+  max-width: 48rem;
+  margin-bottom: 0;
+}
+
+@media (max-width: 820px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    width: min(100% - 24px, 720px);
+    padding: var(--space-4) 0;
+  }
+
+  .shell-sidebar {
+    position: static;
+    gap: var(--space-4);
+  }
+
+  .primary-nav {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .nav-target {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: var(--space-2);
+    padding-left: var(--space-2);
+    text-align: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-shell {
+    width: min(100% - 20px, 420px);
+  }
+
+  .shell-sidebar,
+  .view-panel {
+    padding: var(--space-4);
+  }
+
+  .primary-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-target {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
