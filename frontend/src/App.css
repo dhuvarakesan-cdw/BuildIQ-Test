@@ -209,6 +209,7 @@
 }
 
 .hero-panel,
+.local-data-notice,
 .task-form,
 .task-list-panel {
   min-width: 0;
@@ -234,6 +235,32 @@
   margin-bottom: 1.25rem;
   color: var(--color-text);
   font-size: 1.1rem;
+}
+
+.local-data-notice {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.local-data-notice h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.local-data-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.local-data-list li {
+  color: var(--color-text);
+  line-height: 1.5;
 }
 
 .task-summary {
@@ -735,6 +762,10 @@
   .content-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .local-data-notice {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 560px) {
@@ -758,6 +789,7 @@
   }
 
   .hero-panel,
+  .local-data-notice,
   .task-form,
   .task-list-panel {
     padding: 1rem;

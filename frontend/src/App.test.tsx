@@ -47,6 +47,32 @@ describe('App foundation shell', () => {
   });
 
   /**
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-003;
+   * AC-006: verifies the UI explains browser-profile localStorage persistence
+   * and confirms there is no backend service, account, auth, or sync behavior.
+   */
+  it('communicates local-only browser-profile storage and no backend use', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', {
+      level: 3,
+      name: 'Stored only in this browser profile',
+    })).toBeInTheDocument();
+    expect(screen.getByText(
+      /saved in this browser profile with localStorage under the ptma\.tasks\.v1 key/i,
+    )).toBeInTheDocument();
+    expect(screen.getByText(
+      /no backend services, accounts, authentication, analytics, telemetry, or cross-device sync are used/i,
+    )).toBeInTheDocument();
+    expect(screen.getByText(
+      /saved tasks remain after refresh, and confirmed deletions remain deleted after refresh/i,
+    )).toBeInTheDocument();
+    expect(screen.getByText(
+      /not available from another browser profile or another device/i,
+    )).toBeInTheDocument();
+  });
+
+  /**
    * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-003;
    * AC-006: verifies a valid form submission creates a task with entered
    * fields, then edit mode updates the saved task values.
