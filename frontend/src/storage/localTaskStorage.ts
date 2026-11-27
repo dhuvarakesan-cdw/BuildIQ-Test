@@ -2,6 +2,14 @@ import { isTaskPriority, type Task } from '../domain/task';
 
 export const LOCAL_TASK_STORAGE_KEY = 'ptma.tasks.v1';
 
+export const TASK_STORAGE_PRIVACY = {
+  persistence: 'localStorage',
+  storageKey: LOCAL_TASK_STORAGE_KEY,
+  sendsTaskDataOverNetwork: false,
+  usesBackendService: false,
+  usesTelemetry: false,
+} as const;
+
 type TaskStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 const getBrowserTaskStorage = (): TaskStorage | null => {

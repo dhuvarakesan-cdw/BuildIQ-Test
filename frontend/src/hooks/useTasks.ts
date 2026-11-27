@@ -15,7 +15,11 @@ import {
   validateTaskInput,
   validateTaskUpdate,
 } from '../domain/task';
-import { readTasks, writeTasks } from '../storage/localTaskStorage';
+import {
+  TASK_STORAGE_PRIVACY,
+  readTasks,
+  writeTasks,
+} from '../storage/localTaskStorage';
 
 const TASK_PERSISTENCE_ERROR_MESSAGE =
   'Tasks changed here, but this browser could not save them for refresh.';
@@ -31,6 +35,8 @@ export interface UseTasksOptions {
   initialTasks?: readonly Task[];
   today?: Date | string;
 }
+
+export const TASK_PERSISTENCE_MODE = TASK_STORAGE_PRIVACY.persistence;
 
 export interface UseTasksResult {
   tasks: Task[];
