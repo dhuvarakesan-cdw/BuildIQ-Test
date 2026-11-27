@@ -1,0 +1,6 @@
+test-results/
+playwright-report/
+blob-report/
+.tmp/
+node_modules/
+*.db
