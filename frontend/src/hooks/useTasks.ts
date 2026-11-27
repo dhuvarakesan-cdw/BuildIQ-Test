@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import {
   Task,
@@ -15,6 +15,10 @@ import {
   validateTaskInput,
   validateTaskUpdate,
 } from '../domain/task';
+import { readTasks, writeTasks } from '../storage/localTaskStorage';
+
+const TASK_PERSISTENCE_ERROR_MESSAGE =
+  'Tasks changed here, but this browser could not save them for refresh.';
 
 export interface TaskCounts {
   all: number;
@@ -33,6 +37,7 @@ export interface UseTasksResult {
   visibleTasks: Task[];
   filter: TaskFilter;
   validationErrors: TaskValidationErrors;
+  persistenceError: string | null;
   editTarget: Task | null;
   pendingDeleteTarget: Task | null;
   counts: TaskCounts;
@@ -48,11 +53,15 @@ export interface UseTasksResult {
 }
 
 export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
-  const { initialTasks = [], today = new Date() } = options;
-  const [tasks, setTasks] = useState<Task[]>(() => [...initialTasks]);
+  const { today = new Date() } = options;
+  const [tasks, setTasks] = useState<Task[]>(() => (
+    options.initialTasks === undefined ? readTasks() : [...options.initialTasks]
+  ));
+  const tasksRef = useRef(tasks);
   const [filter, setFilter] = useState<TaskFilter>('all');
   const [validationErrors, setValidationErrors] =
     useState<TaskValidationErrors>({});
+  const [persistenceError, setPersistenceError] = useState<string | null>(null);
   const [editTargetId, setEditTargetId] = useState<TaskId | null>(null);
   const [pendingDeleteTargetId, setPendingDeleteTargetId] =
     useState<TaskId | null>(null);
@@ -71,6 +80,14 @@ export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
     overdueActive: tasks.filter((task) => isTaskOverdue(task, today)).length,
   };
 
+  const commitTasks = (nextTasks: Task[]): void => {
+    tasksRef.current = nextTasks;
+    setTasks(nextTasks);
+    setPersistenceError(
+      writeTasks(nextTasks) ? null : TASK_PERSISTENCE_ERROR_MESSAGE,
+    );
+  };
+
   const createTask = (input: TaskInput): boolean => {
     const validationResult = validateTaskInput(input);
 
@@ -79,8 +96,8 @@ export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
       return false;
     }
 
-    setTasks((currentTasks) => [
-      ...currentTasks,
+    commitTasks([
+      ...tasksRef.current,
       createDomainTask(validationResult.value),
     ]);
     setValidationErrors({});
@@ -102,7 +119,7 @@ export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
 
     const updatedTask = mergeTaskUpdate(editTarget, update);
 
-    setTasks((currentTasks) => currentTasks.map((task) => (
+    commitTasks(tasksRef.current.map((task) => (
       task.id === editTarget.id ? updatedTask : task
     )));
     setEditTargetId(null);
@@ -150,7 +167,7 @@ export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
       return false;
     }
 
-    setTasks((currentTasks) => currentTasks.filter(
+    commitTasks(tasksRef.current.filter(
       (task) => task.id !== pendingDeleteTarget.id,
     ));
 
@@ -171,7 +188,7 @@ export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
       return false;
     }
 
-    setTasks((currentTasks) => currentTasks.map((task) => (
+    commitTasks(tasksRef.current.map((task) => (
       task.id === taskId ? toggleDomainTaskCompletion(task) : task
     )));
 
@@ -183,6 +200,7 @@ export const useTasks = (options: UseTasksOptions = {}): UseTasksResult => {
     visibleTasks,
     filter,
     validationErrors,
+    persistenceError,
     editTarget,
     pendingDeleteTarget,
     counts,

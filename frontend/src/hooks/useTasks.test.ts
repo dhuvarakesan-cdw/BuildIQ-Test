@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
 import { Task } from '../domain/task';
+import { LOCAL_TASK_STORAGE_KEY } from '../storage/localTaskStorage';
 import { useTasks } from './useTasks';
 
 const createTaskFixture = (overrides: Partial<Task> = {}): Task => ({
@@ -15,6 +16,10 @@ const createTaskFixture = (overrides: Partial<Task> = {}): Task => ({
 });
 
 describe('useTasks', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   /**
    * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-002;
    * AC-004: verifies hook commands create, edit, toggle, filter, and delete
@@ -152,5 +157,119 @@ describe('useTasks', () => {
       title: 'Title is required.',
     });
     expect(result.current.tasks).toEqual([existingTask]);
+  });
+
+  /**
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-002;
+   * AC-003: verifies created and edited tasks are loaded from localStorage on a
+   * fresh hook mount, matching the after-refresh task list behavior.
+   */
+  it('loads created and edited tasks from local storage after a refresh', () => {
+    const firstRender = renderHook(() => useTasks());
+
+    act(() => {
+      expect(firstRender.result.current.createTask({
+        title: '  Book venue  ',
+        description: '  Main hall  ',
+        dueDate: '2026-12-02',
+        priority: 'high',
+      })).toBe(true);
+    });
+
+    const createdTaskId = firstRender.result.current.tasks[0].id;
+
+    act(() => {
+      expect(firstRender.result.current.startEdit(createdTaskId)).toBe(true);
+    });
+    act(() => {
+      expect(firstRender.result.current.updateTask({
+        title: 'Confirm venue',
+        description: 'Signed agreement',
+      })).toBe(true);
+    });
+
+    firstRender.unmount();
+
+    const refreshedRender = renderHook(() => useTasks());
+
+    expect(refreshedRender.result.current.visibleTasks).toEqual([
+      expect.objectContaining({
+        id: createdTaskId,
+        title: 'Confirm venue',
+        description: 'Signed agreement',
+        dueDate: '2026-12-02',
+        priority: 'high',
+      }),
+    ]);
+  });
+
+  /**
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-002;
+   * AC-004: verifies a confirmed deletion updates localStorage so the deleted
+   * task does not return on a fresh hook mount.
+   */
+  it('keeps confirmed deletions deleted after a refresh', () => {
+    const remainingTask = createTaskFixture({
+      id: 'task-1',
+      title: 'Plan launch',
+    });
+    const deletedTask = createTaskFixture({
+      id: 'task-2',
+      title: 'Archive notes',
+    });
+
+    localStorage.setItem(
+      LOCAL_TASK_STORAGE_KEY,
+      JSON.stringify([remainingTask, deletedTask]),
+    );
+
+    const firstRender = renderHook(() => useTasks());
+
+    act(() => {
+      expect(firstRender.result.current.requestDelete('task-2')).toBe(true);
+    });
+    act(() => {
+      expect(firstRender.result.current.confirmDelete()).toBe(true);
+    });
+
+    firstRender.unmount();
+
+    const refreshedRender = renderHook(() => useTasks());
+
+    expect(refreshedRender.result.current.tasks).toEqual([remainingTask]);
+  });
+
+  /**
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-002;
+   * AC-005: verifies completion toggles are persisted to localStorage and are
+   * visible on a fresh hook mount.
+   */
+  it('loads persisted completion status after a refresh', () => {
+    const activeTask = createTaskFixture({
+      id: 'task-1',
+      title: 'Plan launch',
+      completed: false,
+    });
+
+    localStorage.setItem(LOCAL_TASK_STORAGE_KEY, JSON.stringify([activeTask]));
+
+    const firstRender = renderHook(() => useTasks());
+
+    act(() => {
+      expect(firstRender.result.current.toggleTaskCompletion('task-1')).toBe(
+        true,
+      );
+    });
+
+    firstRender.unmount();
+
+    const refreshedRender = renderHook(() => useTasks());
+
+    expect(refreshedRender.result.current.tasks).toEqual([
+      {
+        ...activeTask,
+        completed: true,
+      },
+    ]);
   });
 });
