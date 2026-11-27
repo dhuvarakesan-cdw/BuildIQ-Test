@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "test": "jest --coverage --coverageReporters=json-summary",
     "test:ci": "jest --coverage --coverageReporters=json-summary --json --outputFile=jest.json",
+    "test:persistence": "jest src/storage/localTaskStorage.test.ts src/hooks/useTasks.persistence.test.tsx src/components/privacy/LocalDataNotice.test.tsx",
     "test:e2e": "echo \"No e2e tests configured for scaffold\""
   },
   "dependencies": {
