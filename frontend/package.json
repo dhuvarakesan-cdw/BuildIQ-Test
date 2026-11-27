@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest --coverage --coverageReporters=json-summary",
+    "test:ci": "jest --coverage --coverageReporters=json-summary --json --outputFile=jest.json",
     "test:e2e": "echo \"No e2e tests configured for scaffold\""
   },
   "dependencies": {

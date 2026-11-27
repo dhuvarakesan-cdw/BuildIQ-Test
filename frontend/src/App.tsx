@@ -1,5 +1,12 @@
 import { useState } from 'react';
 
+import DeleteTaskDialog from './components/tasks/DeleteTaskDialog';
+import TaskForm from './components/tasks/TaskForm';
+import TaskFilters from './components/tasks/TaskFilters';
+import TaskList from './components/tasks/TaskList';
+import TaskSummary from './components/tasks/TaskSummary';
+import { useTasks } from './hooks/useTasks';
+
 type NavigationTarget = 'today' | 'tasks' | 'localData';
 type ThemeMode = 'light' | 'calm';
 type Persona = 'planner' | 'caretaker' | 'student';
@@ -8,11 +15,6 @@ type NavigationItem = {
   id: NavigationTarget;
   label: string;
   description: string;
-};
-
-type TaskHighlight = {
-  label: string;
-  value: string;
 };
 
 const navigationItems: NavigationItem[] = [
@@ -33,12 +35,6 @@ const navigationItems: NavigationItem[] = [
   },
 ];
 
-const taskHighlights: TaskHighlight[] = [
-  { label: 'Pinned tasks', value: '0' },
-  { label: 'Due today', value: '0' },
-  { label: 'Stored locally', value: 'Ready' },
-];
-
 const personaLabels: Record<Persona, string> = {
   planner: 'Planner',
   caretaker: 'Caretaker',
@@ -49,10 +45,102 @@ export default function App() {
   const [activeTarget, setActiveTarget] = useState<NavigationTarget>('today');
   const [persona, setPersona] = useState<Persona>('planner');
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const [taskFeedback, setTaskFeedback] = useState(
+    'Task workspace ready for keyboard use.',
+  );
+  const tasksState = useTasks();
   const activeNavigation = navigationItems.find(
     (item) => item.id === activeTarget,
   );
   const currentSectionTitle = activeNavigation?.label ?? 'Today';
+  const pendingDeleteTitle = tasksState.pendingDeleteTarget?.title ?? '';
+
+  const handleCreateTask: typeof tasksState.createTask = (input) => {
+    const didCreate = tasksState.createTask(input);
+
+    setTaskFeedback(
+      didCreate
+        ? `Task "${input.title.trim()}" saved.`
+        : 'Enter a task title before saving.',
+    );
+
+    return didCreate;
+  };
+
+  const handleUpdateTask: typeof tasksState.updateTask = (input) => {
+    const didUpdate = tasksState.updateTask(input);
+    const updatedTitle = input.title?.trim() || tasksState.editTarget?.title;
+
+    setTaskFeedback(
+      didUpdate
+        ? `Task "${updatedTitle}" updated.`
+        : 'Enter a task title before saving changes.',
+    );
+
+    return didUpdate;
+  };
+
+  const handleCancelEdit = (): void => {
+    tasksState.cancelEdit();
+    setTaskFeedback('Task editing canceled.');
+  };
+
+  const handleFilterChange: typeof tasksState.setFilter = (filter) => {
+    tasksState.setFilter(filter);
+    setTaskFeedback(`Showing ${filter} tasks.`);
+  };
+
+  const handleToggleCompletion: typeof tasksState.toggleTaskCompletion = (
+    taskId,
+  ) => {
+    const task = tasksState.tasks.find((savedTask) => savedTask.id === taskId);
+    const didToggle = tasksState.toggleTaskCompletion(taskId);
+
+    if (didToggle && task !== undefined) {
+      setTaskFeedback(
+        task.completed
+          ? `Task "${task.title}" marked active.`
+          : `Task "${task.title}" marked complete.`,
+      );
+    }
+
+    return didToggle;
+  };
+
+  const handleStartEdit: typeof tasksState.startEdit = (taskId) => {
+    const task = tasksState.tasks.find((savedTask) => savedTask.id === taskId);
+    const didStart = tasksState.startEdit(taskId);
+
+    if (didStart && task !== undefined) {
+      setTaskFeedback(`Editing task "${task.title}".`);
+    }
+
+    return didStart;
+  };
+
+  const handleRequestDelete: typeof tasksState.requestDelete = (taskId) => {
+    const task = tasksState.tasks.find((savedTask) => savedTask.id === taskId);
+    const didRequest = tasksState.requestDelete(taskId);
+
+    if (didRequest && task !== undefined) {
+      setTaskFeedback(`Delete confirmation opened for "${task.title}".`);
+    }
+
+    return didRequest;
+  };
+
+  const handleCancelDelete = (): void => {
+    tasksState.cancelDelete();
+    setTaskFeedback('Task deletion canceled.');
+  };
+
+  const handleConfirmDelete = (): void => {
+    const didDelete = tasksState.confirmDelete();
+
+    if (didDelete) {
+      setTaskFeedback(`Task "${pendingDeleteTitle}" deleted.`);
+    }
+  };
 
   return (
     <div className="app-shell" data-theme={themeMode}>
@@ -126,55 +214,56 @@ export default function App() {
             <p className="section-kicker">{personaLabels[persona]} workspace</p>
             <h2 id="main-heading">{currentSectionTitle}</h2>
             <p className="section-lead">
-              A responsive shell for local task planning, with room for task screens
-              and storage controls as the app grows.
+              Create, edit, and review local tasks without accounts or a backend
+              service.
             </p>
+            <TaskSummary counts={tasksState.counts} />
           </section>
 
           <section
             className="content-grid"
-            aria-label="Task and local data placeholders"
+            aria-label="Task editor and saved tasks"
           >
-            <article
-              className="placeholder-card"
-              aria-labelledby="task-placeholder-heading"
-            >
-              <p className="section-kicker">Task placeholder</p>
-              <h3 id="task-placeholder-heading">Tasks will appear here</h3>
-              <p>
-                This area is reserved for creating, reviewing, and completing tasks
-                without adding accounts or a backend service.
-              </p>
-
-              <dl className="task-metrics" aria-label="Current task summary">
-                {taskHighlights.map((item) => (
-                  <div key={item.label}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
+            <TaskForm
+              editTarget={tasksState.editTarget}
+              validationErrors={tasksState.validationErrors}
+              onCreateTask={handleCreateTask}
+              onUpdateTask={handleUpdateTask}
+              onCancelEdit={handleCancelEdit}
+            />
 
             <article
-              className="placeholder-card"
-              aria-labelledby="local-data-heading"
+              className="task-list-panel"
+              aria-labelledby="task-list-heading"
             >
-              <p className="section-kicker">Local data placeholder</p>
-              <h3 id="local-data-heading">Browser storage only</h3>
-              <p>
-                Saved task data will stay on this device through browser storage.
-                Clearing site data will remove the saved task list.
+              <p className="section-kicker">Task list</p>
+              <h3 id="task-list-heading">Saved tasks</h3>
+              <p className="task-feedback" role="status" aria-live="polite">
+                {taskFeedback}
               </p>
-
-              <div className="storage-status" role="status" aria-live="polite">
-                <span aria-hidden="true" />
-                Local storage connection ready
-              </div>
+              <TaskFilters
+                activeFilter={tasksState.filter}
+                counts={tasksState.counts}
+                visibleCount={tasksState.visibleTasks.length}
+                onFilterChange={handleFilterChange}
+              />
+              <TaskList
+                filter={tasksState.filter}
+                tasks={tasksState.visibleTasks}
+                onToggleCompletion={handleToggleCompletion}
+                onEdit={handleStartEdit}
+                onDelete={handleRequestDelete}
+              />
             </article>
           </section>
         </main>
       </div>
+
+      <DeleteTaskDialog
+        task={tasksState.pendingDeleteTarget}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
