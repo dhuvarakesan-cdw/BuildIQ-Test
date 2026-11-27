@@ -54,6 +54,7 @@ export default function App() {
   );
   const currentSectionTitle = activeNavigation?.label ?? 'Today';
   const pendingDeleteTitle = tasksState.pendingDeleteTarget?.title ?? '';
+  const visibleTaskFeedback = tasksState.persistenceError ?? taskFeedback;
 
   const handleCreateTask: typeof tasksState.createTask = (input) => {
     const didCreate = tasksState.createTask(input);
@@ -239,7 +240,7 @@ export default function App() {
               <p className="section-kicker">Task list</p>
               <h3 id="task-list-heading">Saved tasks</h3>
               <p className="task-feedback" role="status" aria-live="polite">
-                {taskFeedback}
+                {visibleTaskFeedback}
               </p>
               <TaskFilters
                 activeFilter={tasksState.filter}
