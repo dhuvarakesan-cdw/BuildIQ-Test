@@ -1,0 +1,195 @@
+{
+  "featureId": "FEAT-002",
+  "name": "Local Task Persistence",
+  "storageKey": "ptma.tasks.v1",
+  "referenceDate": "2026-11-27",
+  "tasks": [
+    {
+      "id": "task-local-budget-review",
+      "title": "Review household budget",
+      "description": "Check recurring subscriptions and mark savings notes.",
+      "dueDate": "2026-12-02",
+      "priority": "high",
+      "completed": false,
+      "createdAt": "2026-11-24T10:00:00.000Z"
+    },
+    {
+      "id": "task-local-library-return",
+      "title": "Return library books",
+      "description": "Drop books at the neighborhood branch before closing.",
+      "dueDate": "2026-11-29",
+      "priority": "medium",
+      "completed": false,
+      "createdAt": "2026-11-23T16:30:00.000Z"
+    },
+    {
+      "id": "task-local-archive-receipts",
+      "title": "Archive tax receipts",
+      "description": "Scan paper receipts and file the digital copies.",
+      "dueDate": "2026-12-10",
+      "priority": "low",
+      "completed": true,
+      "createdAt": "2026-11-21T09:15:00.000Z"
+    },
+    {
+      "id": "task-local-renew-parking",
+      "title": "Renew parking permit",
+      "description": "Submit the renewal form before the monthly deadline.",
+      "dueDate": "2026-12-01",
+      "priority": "medium",
+      "completed": false,
+      "createdAt": "2026-11-27T08:00:00.000Z"
+    },
+    {
+      "id": "task-isolated-profile-welcome",
+      "title": "Plan new profile setup",
+      "description": "Create a separate checklist for an isolated browser profile.",
+      "dueDate": "",
+      "priority": "medium",
+      "completed": false,
+      "createdAt": "2026-11-25T12:45:00.000Z"
+    }
+  ],
+  "storageContexts": [
+    {
+      "id": "context-current-profile",
+      "name": "Current browser profile",
+      "storageType": "localStorage",
+      "storageKey": "ptma.tasks.v1",
+      "taskIds": [
+        "task-local-budget-review",
+        "task-local-library-return",
+        "task-local-archive-receipts"
+      ]
+    },
+    {
+      "id": "context-original-profile",
+      "name": "Original browser profile",
+      "storageType": "localStorage",
+      "storageKey": "ptma.tasks.v1",
+      "taskIds": [
+        "task-local-budget-review",
+        "task-local-library-return"
+      ]
+    },
+    {
+      "id": "context-different-profile",
+      "name": "Different browser profile",
+      "storageType": "localStorage",
+      "storageKey": "ptma.tasks.v1",
+      "taskIds": [
+        "task-isolated-profile-welcome"
+      ]
+    },
+    {
+      "id": "context-isolated-empty-profile",
+      "name": "Isolated empty browser profile",
+      "storageType": "localStorage",
+      "storageKey": "ptma.tasks.v1",
+      "taskIds": []
+    }
+  ],
+  "createExamples": {
+    "refreshCreatedTask": {
+      "id": "task-local-renew-parking",
+      "title": "Renew parking permit",
+      "description": "Submit the renewal form before the monthly deadline.",
+      "dueDate": "2026-12-01",
+      "priority": "medium",
+      "completed": false,
+      "createdAt": "2026-11-27T08:00:00.000Z"
+    }
+  },
+  "editExamples": {
+    "refreshEditedTask": {
+      "id": "task-local-budget-review",
+      "title": "Review household budget updates",
+      "description": "Check recurring subscriptions and record final savings notes.",
+      "dueDate": "2026-12-04",
+      "priority": "high",
+      "completed": true,
+      "createdAt": "2026-11-24T10:00:00.000Z"
+    }
+  },
+  "networkMonitoring": {
+    "blockedApiPatterns": [
+      "/api/tasks",
+      "/tasks",
+      "/graphql"
+    ],
+    "observedFlows": [
+      "create",
+      "view",
+      "edit",
+      "delete",
+      "complete",
+      "filter"
+    ],
+    "forbiddenTaskFields": [
+      "title",
+      "description",
+      "dueDate",
+      "priority",
+      "completed"
+    ]
+  },
+  "scenarios": {
+    "FAC-001": {
+      "name": "Created and edited tasks remain available after the browser page is refreshed",
+      "taskIds": [
+        "task-local-budget-review",
+        "task-local-renew-parking"
+      ],
+      "storageContextIds": [
+        "context-current-profile"
+      ]
+    },
+    "FAC-002": {
+      "name": "A confirmed deleted task does not reappear after refresh",
+      "taskIds": [
+        "task-local-library-return",
+        "task-local-budget-review",
+        "task-local-archive-receipts"
+      ],
+      "storageContextIds": [
+        "context-current-profile"
+      ]
+    },
+    "FAC-003": {
+      "name": "Original browser profile tasks are not available in a different browser profile",
+      "taskIds": [
+        "task-local-budget-review",
+        "task-local-library-return",
+        "task-isolated-profile-welcome"
+      ],
+      "storageContextIds": [
+        "context-original-profile",
+        "context-different-profile"
+      ]
+    },
+    "FAC-004": {
+      "name": "Task create, view, edit, delete, complete, and filter flows send no task data to backend APIs",
+      "taskIds": [
+        "task-local-budget-review",
+        "task-local-library-return",
+        "task-local-archive-receipts",
+        "task-local-renew-parking"
+      ],
+      "storageContextIds": [
+        "context-current-profile"
+      ]
+    },
+    "FAC-005": {
+      "name": "Task data persists only in browser storage available to the current browser profile",
+      "taskIds": [
+        "task-local-budget-review",
+        "task-local-library-return",
+        "task-local-archive-receipts"
+      ],
+      "storageContextIds": [
+        "context-current-profile",
+        "context-isolated-empty-profile"
+      ]
+    }
+  }
+}

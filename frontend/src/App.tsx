@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import LocalDataNotice from './components/privacy/LocalDataNotice';
 import DeleteTaskDialog from './components/tasks/DeleteTaskDialog';
 import TaskForm from './components/tasks/TaskForm';
 import TaskFilters from './components/tasks/TaskFilters';
@@ -54,6 +55,7 @@ export default function App() {
   );
   const currentSectionTitle = activeNavigation?.label ?? 'Today';
   const pendingDeleteTitle = tasksState.pendingDeleteTarget?.title ?? '';
+  const visibleTaskFeedback = tasksState.persistenceError ?? taskFeedback;
 
   const handleCreateTask: typeof tasksState.createTask = (input) => {
     const didCreate = tasksState.createTask(input);
@@ -220,6 +222,8 @@ export default function App() {
             <TaskSummary counts={tasksState.counts} />
           </section>
 
+          <LocalDataNotice />
+
           <section
             className="content-grid"
             aria-label="Task editor and saved tasks"
@@ -239,7 +243,7 @@ export default function App() {
               <p className="section-kicker">Task list</p>
               <h3 id="task-list-heading">Saved tasks</h3>
               <p className="task-feedback" role="status" aria-live="polite">
-                {taskFeedback}
+                {visibleTaskFeedback}
               </p>
               <TaskFilters
                 activeFilter={tasksState.filter}
