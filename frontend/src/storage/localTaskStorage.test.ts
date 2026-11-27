@@ -1,6 +1,7 @@
 import { type Task } from '../domain/task';
 import {
   LOCAL_TASK_STORAGE_KEY,
+  TASK_STORAGE_PRIVACY,
   clearTasks,
   readTasks,
   writeTasks,
@@ -63,9 +64,9 @@ describe('localTaskStorage', () => {
   });
 
   /**
-   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-001;
-   * AC-001: verifies the adapter writes and reads typed task arrays under the
-   * stable localStorage key while storing only supported FEAT-001 fields.
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-005;
+   * AC-008: verifies the adapter writes and reads typed task arrays under the
+   * stable localStorage key while storing only supported task fields locally.
    */
   it('reads and writes task arrays under the stable localStorage key', () => {
     const task = createTaskFixture() as Task & { remoteId: string };
@@ -92,11 +93,11 @@ describe('localTaskStorage', () => {
   });
 
   /**
-   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-001;
-   * AC-002: verifies missing or invalid local data returns an empty collection
-   * and never invokes a backend request.
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-005;
+   * AC-008: verifies missing, invalid, and partially invalid local data returns
+   * only valid local tasks and never invokes a backend request.
    */
-  it('treats missing or invalid stored data as an empty task collection', () => {
+  it('treats missing or invalid stored data as an empty local collection', () => {
     const { fetchMock, restoreFetch } = mockFetch();
 
     try {
@@ -109,6 +110,13 @@ describe('localTaskStorage', () => {
         tasks: [createTaskFixture()],
       }));
       expect(readTasks()).toEqual([]);
+
+      localStorage.setItem(LOCAL_TASK_STORAGE_KEY, JSON.stringify([
+        createTaskFixture(),
+        { ...createTaskFixture({ id: 'task-2' }), priority: 'urgent' },
+        null,
+      ]));
+      expect(readTasks()).toEqual([createTaskFixture()]);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       restoreFetch();
@@ -116,8 +124,8 @@ describe('localTaskStorage', () => {
   });
 
   /**
-   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-001;
-   * AC-002: verifies unavailable storage and write/remove failures are
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-005;
+   * AC-008: verifies unavailable storage and write/remove failures are
    * recoverable local errors with no backend fallback.
    */
   it('recovers from unavailable storage and write or clear failures locally', () => {
@@ -138,10 +146,11 @@ describe('localTaskStorage', () => {
   });
 
   /**
-   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-001;
-   * AC-001: verifies clearing removes only the stable task storage entry.
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-005;
+   * AC-008: verifies clearing removes only the stable task storage entry and
+   * the adapter exports privacy metadata that forbids backend transmission.
    */
-  it('clears tasks from the stable task storage key', () => {
+  it('clears tasks from the stable key and declares local-only persistence', () => {
     localStorage.setItem('unrelated', 'keep');
 
     expect(writeTasks([createTaskFixture()])).toBe(true);
@@ -149,5 +158,12 @@ describe('localTaskStorage', () => {
 
     expect(localStorage.getItem(LOCAL_TASK_STORAGE_KEY)).toBeNull();
     expect(localStorage.getItem('unrelated')).toBe('keep');
+    expect(TASK_STORAGE_PRIVACY).toEqual({
+      persistence: 'localStorage',
+      storageKey: LOCAL_TASK_STORAGE_KEY,
+      sendsTaskDataOverNetwork: false,
+      usesBackendService: false,
+      usesTelemetry: false,
+    });
   });
 });
