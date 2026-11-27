@@ -2,6 +2,13 @@
   "name": "personal-task-manager",
   "private": true,
   "version": "0.1.0",
+  "privacy": {
+    "taskPersistence": "localStorage",
+    "taskStorageKey": "ptma.tasks.v1",
+    "backendPersistence": false,
+    "analytics": false,
+    "telemetry": false
+  },
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",

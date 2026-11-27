@@ -15,6 +15,91 @@ const createTaskFixture = (overrides: Partial<Task> = {}): Task => ({
   ...overrides,
 });
 
+type NetworkSentinel = {
+  analyticsMock: jest.Mock;
+  fetchMock: jest.Mock;
+  restore: () => void;
+  sendBeaconMock: jest.Mock;
+  telemetryMock: jest.Mock;
+  webSocketMock: jest.Mock;
+  xhrMock: jest.Mock;
+};
+
+const mockGlobalValue = (
+  key: string,
+  value: unknown,
+): (() => void) => {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, key);
+
+  Object.defineProperty(globalThis, key, {
+    configurable: true,
+    writable: true,
+    value,
+  });
+
+  return () => {
+    if (originalDescriptor === undefined) {
+      Reflect.deleteProperty(globalThis, key);
+      return;
+    }
+
+    Object.defineProperty(globalThis, key, originalDescriptor);
+  };
+};
+
+const mockNavigatorValue = (
+  key: string,
+  value: unknown,
+): (() => void) => {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(navigator, key);
+
+  Object.defineProperty(navigator, key, {
+    configurable: true,
+    writable: true,
+    value,
+  });
+
+  return () => {
+    if (originalDescriptor === undefined) {
+      Reflect.deleteProperty(navigator, key);
+      return;
+    }
+
+    Object.defineProperty(navigator, key, originalDescriptor);
+  };
+};
+
+const installNetworkSentinel = (): NetworkSentinel => {
+  const analyticsMock = jest.fn();
+  const fetchMock = jest.fn();
+  const restoreCallbacks: Array<() => void> = [];
+  const sendBeaconMock = jest.fn();
+  const telemetryMock = jest.fn();
+  const webSocketMock = jest.fn();
+  const xhrMock = jest.fn();
+
+  restoreCallbacks.push(mockGlobalValue('analytics', analyticsMock));
+  restoreCallbacks.push(mockGlobalValue('fetch', fetchMock));
+  restoreCallbacks.push(mockGlobalValue('telemetry', telemetryMock));
+  restoreCallbacks.push(mockGlobalValue('WebSocket', webSocketMock));
+  restoreCallbacks.push(mockGlobalValue('XMLHttpRequest', xhrMock));
+  restoreCallbacks.push(mockNavigatorValue('sendBeacon', sendBeaconMock));
+
+  return {
+    analyticsMock,
+    fetchMock,
+    restore: () => {
+      [...restoreCallbacks].reverse().forEach((restoreCallback) => {
+        restoreCallback();
+      });
+    },
+    sendBeaconMock,
+    telemetryMock,
+    webSocketMock,
+    xhrMock,
+  };
+};
+
 describe('useTasks', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -271,5 +356,88 @@ describe('useTasks', () => {
         completed: true,
       },
     ]);
+  });
+
+  /**
+   * run_id: 1490a92254cb4fdaaa8bd2b6c9befd11; task_id: TASK-004;
+   * AC-007: verifies view, create, edit, complete, filter, and delete flows
+   * persist with localStorage only and never invoke network or telemetry APIs.
+   */
+  it('keeps core task flows local without network or telemetry calls', () => {
+    const sentinel = installNetworkSentinel();
+    const getItemSpy = jest.spyOn(Storage.prototype, 'getItem');
+    const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
+    const removeItemSpy = jest.spyOn(Storage.prototype, 'removeItem');
+    const storedTask = createTaskFixture({
+      id: 'task-1',
+      title: 'Read privacy notice',
+      completed: false,
+    });
+
+    localStorage.setItem(LOCAL_TASK_STORAGE_KEY, JSON.stringify([storedTask]));
+
+    try {
+      setItemSpy.mockClear();
+
+      const { result } = renderHook(() => useTasks());
+
+      expect(result.current.visibleTasks).toEqual([storedTask]);
+
+      act(() => {
+        expect(result.current.createTask({
+          title: '  Draft launch tasks  ',
+          priority: 'high',
+        })).toBe(true);
+      });
+
+      const createdTaskId = result.current.tasks[1].id;
+
+      act(() => {
+        expect(result.current.startEdit(createdTaskId)).toBe(true);
+      });
+      act(() => {
+        expect(result.current.updateTask({
+          title: 'Draft launch checklist',
+          completed: false,
+        })).toBe(true);
+      });
+      act(() => {
+        expect(result.current.toggleTaskCompletion(createdTaskId)).toBe(true);
+        result.current.setFilter('completed');
+      });
+
+      expect(result.current.visibleTasks).toEqual([
+        expect.objectContaining({
+          id: createdTaskId,
+          title: 'Draft launch checklist',
+          completed: true,
+        }),
+      ]);
+
+      act(() => {
+        expect(result.current.requestDelete('task-1')).toBe(true);
+      });
+      act(() => {
+        expect(result.current.confirmDelete()).toBe(true);
+      });
+
+      expect(getItemSpy).toHaveBeenCalledWith(LOCAL_TASK_STORAGE_KEY);
+      expect(setItemSpy).toHaveBeenCalledWith(
+        LOCAL_TASK_STORAGE_KEY,
+        expect.any(String),
+      );
+      expect(removeItemSpy).not.toHaveBeenCalled();
+      expect(sentinel.fetchMock).not.toHaveBeenCalled();
+      expect(sentinel.xhrMock).not.toHaveBeenCalled();
+      expect(sentinel.webSocketMock).not.toHaveBeenCalled();
+      expect(sentinel.sendBeaconMock).not.toHaveBeenCalled();
+      expect(sentinel.analyticsMock).not.toHaveBeenCalled();
+      expect(sentinel.telemetryMock).not.toHaveBeenCalled();
+    } finally {
+      getItemSpy.mockRestore();
+      removeItemSpy.mockRestore();
+      sentinel.restore();
+      setItemSpy.mockRestore();
+    }
   });
 });
