@@ -139,4 +139,87 @@ describe('App foundation shell', () => {
       .not.toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toHaveValue('');
   });
+
+  /**
+   * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-004;
+   * AC-009: verifies all, active, and completed filters show matching tasks
+   * and a filter-specific empty state when no task matches.
+   */
+  it('filters saved tasks and shows filter-specific empty states', () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText('Title'), {
+      target: { value: 'Call supplier' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save task' }));
+    fireEvent.change(screen.getByLabelText('Title'), {
+      target: { value: 'Archive receipts' },
+    });
+    fireEvent.click(screen.getByLabelText('Completed'));
+    fireEvent.click(screen.getByRole('button', { name: 'Save task' }));
+
+    fireEvent.click(screen.getByRole('button', { name: /Active/ }));
+    expect(screen.getByRole('button', { name: /Active/ }))
+      .toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('heading', { name: 'Call supplier' }))
+      .toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Archive receipts' }))
+      .not.toBeInTheDocument();
+    expect(screen.getByText('Showing 1 active of 2 total tasks.'))
+      .toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Completed/ }));
+    expect(screen.getByRole('heading', { name: 'Archive receipts' }))
+      .toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Call supplier' }))
+      .not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mark active' }));
+    expect(screen.getByText('No completed tasks match this filter.'))
+      .toBeInTheDocument();
+  });
+
+  /**
+   * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-004;
+   * AC-010: verifies completion toggling, editing entry, and deletion only
+   * after confirmation while cancel and Escape keep the task.
+   */
+  it('toggles completion, enters edit mode, and deletes only after confirmation', () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByLabelText('Title'), {
+      target: { value: 'Review proposal' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save task' }));
+
+    const taskList = screen.getByRole('list', { name: 'Saved tasks' });
+    fireEvent.click(within(taskList).getByRole('button', { name: 'Mark complete' }));
+    expect(within(taskList).getByText('Completed')).toBeInTheDocument();
+    fireEvent.click(within(taskList).getByRole('button', { name: 'Mark active' }));
+    expect(within(taskList).getByText('Active')).toBeInTheDocument();
+
+    fireEvent.click(within(taskList).getByRole('button', { name: 'Edit task' }));
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel edit' }));
+
+    fireEvent.click(within(taskList).getByRole('button', { name: 'Delete task' }));
+    let dialog = screen.getByRole('dialog', { name: 'Delete "Review proposal"?' });
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByRole('heading', { name: 'Review proposal' }))
+      .toBeInTheDocument();
+
+    fireEvent.click(within(taskList).getByRole('button', { name: 'Delete task' }));
+    dialog = screen.getByRole('dialog', { name: 'Delete "Review proposal"?' });
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.getByRole('heading', { name: 'Review proposal' }))
+      .toBeInTheDocument();
+
+    fireEvent.click(within(taskList).getByRole('button', { name: 'Delete task' }));
+    dialog = screen.getByRole('dialog', { name: 'Delete "Review proposal"?' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete task' }));
+    expect(screen.queryByRole('heading', { name: 'Review proposal' }))
+      .not.toBeInTheDocument();
+    expect(screen.getByText('No tasks saved yet.')).toBeInTheDocument();
+  });
 });

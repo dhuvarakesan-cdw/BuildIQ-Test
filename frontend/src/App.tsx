@@ -1,8 +1,10 @@
 import { useState } from 'react';
 
+import DeleteTaskDialog from './components/tasks/DeleteTaskDialog';
 import TaskForm from './components/tasks/TaskForm';
+import TaskFilters from './components/tasks/TaskFilters';
+import TaskList from './components/tasks/TaskList';
 import TaskSummary from './components/tasks/TaskSummary';
-import { Task } from './domain/task';
 import { useTasks } from './hooks/useTasks';
 
 type NavigationTarget = 'today' | 'tasks' | 'localData';
@@ -37,12 +39,6 @@ const personaLabels: Record<Persona, string> = {
   planner: 'Planner',
   caretaker: 'Caretaker',
   student: 'Student',
-};
-
-const priorityLabels: Record<Task['priority'], string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
 };
 
 export default function App() {
@@ -151,51 +147,29 @@ export default function App() {
             >
               <p className="section-kicker">Task list</p>
               <h3 id="task-list-heading">Saved tasks</h3>
-              {tasksState.tasks.length === 0 ? (
-                <p className="empty-state">No tasks saved yet.</p>
-              ) : (
-                <ul className="task-list" aria-label="Saved tasks">
-                  {tasksState.tasks.map((task) => (
-                    <li key={task.id} className="task-card">
-                      <div>
-                        <h4>{task.title}</h4>
-                        {task.description === '' ? null : (
-                          <p>{task.description}</p>
-                        )}
-                      </div>
-
-                      <dl className="task-metadata" aria-label={`${task.title} details`}>
-                        <div>
-                          <dt>Due</dt>
-                          <dd>{task.dueDate === '' ? 'No date' : task.dueDate}</dd>
-                        </div>
-                        <div>
-                          <dt>Priority</dt>
-                          <dd>{priorityLabels[task.priority]}</dd>
-                        </div>
-                        <div>
-                          <dt>Status</dt>
-                          <dd>{task.completed ? 'Completed' : 'Active'}</dd>
-                        </div>
-                      </dl>
-
-                      <button
-                        type="button"
-                        className="secondary-action"
-                        onClick={() => {
-                          tasksState.startEdit(task.id);
-                        }}
-                      >
-                        Edit task
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <TaskFilters
+                activeFilter={tasksState.filter}
+                counts={tasksState.counts}
+                visibleCount={tasksState.visibleTasks.length}
+                onFilterChange={tasksState.setFilter}
+              />
+              <TaskList
+                filter={tasksState.filter}
+                tasks={tasksState.visibleTasks}
+                onToggleCompletion={tasksState.toggleTaskCompletion}
+                onEdit={tasksState.startEdit}
+                onDelete={tasksState.requestDelete}
+              />
             </article>
           </section>
         </main>
       </div>
+
+      <DeleteTaskDialog
+        task={tasksState.pendingDeleteTarget}
+        onCancel={tasksState.cancelDelete}
+        onConfirm={tasksState.confirmDelete}
+      />
     </div>
   );
 }
