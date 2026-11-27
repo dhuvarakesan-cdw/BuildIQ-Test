@@ -1,5 +1,10 @@
 import { useState } from 'react';
 
+import TaskForm from './components/tasks/TaskForm';
+import TaskSummary from './components/tasks/TaskSummary';
+import { Task } from './domain/task';
+import { useTasks } from './hooks/useTasks';
+
 type NavigationTarget = 'today' | 'tasks' | 'localData';
 type ThemeMode = 'light' | 'calm';
 type Persona = 'planner' | 'caretaker' | 'student';
@@ -8,11 +13,6 @@ type NavigationItem = {
   id: NavigationTarget;
   label: string;
   description: string;
-};
-
-type TaskHighlight = {
-  label: string;
-  value: string;
 };
 
 const navigationItems: NavigationItem[] = [
@@ -33,22 +33,23 @@ const navigationItems: NavigationItem[] = [
   },
 ];
 
-const taskHighlights: TaskHighlight[] = [
-  { label: 'Pinned tasks', value: '0' },
-  { label: 'Due today', value: '0' },
-  { label: 'Stored locally', value: 'Ready' },
-];
-
 const personaLabels: Record<Persona, string> = {
   planner: 'Planner',
   caretaker: 'Caretaker',
   student: 'Student',
 };
 
+const priorityLabels: Record<Task['priority'], string> = {
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+};
+
 export default function App() {
   const [activeTarget, setActiveTarget] = useState<NavigationTarget>('today');
   const [persona, setPersona] = useState<Persona>('planner');
   const [themeMode, setThemeMode] = useState<ThemeMode>('light');
+  const tasksState = useTasks();
   const activeNavigation = navigationItems.find(
     (item) => item.id === activeTarget,
   );
@@ -126,51 +127,71 @@ export default function App() {
             <p className="section-kicker">{personaLabels[persona]} workspace</p>
             <h2 id="main-heading">{currentSectionTitle}</h2>
             <p className="section-lead">
-              A responsive shell for local task planning, with room for task screens
-              and storage controls as the app grows.
+              Create, edit, and review local tasks without accounts or a backend
+              service.
             </p>
+            <TaskSummary counts={tasksState.counts} />
           </section>
 
           <section
             className="content-grid"
-            aria-label="Task and local data placeholders"
+            aria-label="Task editor and saved tasks"
           >
-            <article
-              className="placeholder-card"
-              aria-labelledby="task-placeholder-heading"
-            >
-              <p className="section-kicker">Task placeholder</p>
-              <h3 id="task-placeholder-heading">Tasks will appear here</h3>
-              <p>
-                This area is reserved for creating, reviewing, and completing tasks
-                without adding accounts or a backend service.
-              </p>
-
-              <dl className="task-metrics" aria-label="Current task summary">
-                {taskHighlights.map((item) => (
-                  <div key={item.label}>
-                    <dt>{item.label}</dt>
-                    <dd>{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </article>
+            <TaskForm
+              editTarget={tasksState.editTarget}
+              validationErrors={tasksState.validationErrors}
+              onCreateTask={tasksState.createTask}
+              onUpdateTask={tasksState.updateTask}
+              onCancelEdit={tasksState.cancelEdit}
+            />
 
             <article
-              className="placeholder-card"
-              aria-labelledby="local-data-heading"
+              className="task-list-panel"
+              aria-labelledby="task-list-heading"
             >
-              <p className="section-kicker">Local data placeholder</p>
-              <h3 id="local-data-heading">Browser storage only</h3>
-              <p>
-                Saved task data will stay on this device through browser storage.
-                Clearing site data will remove the saved task list.
-              </p>
+              <p className="section-kicker">Task list</p>
+              <h3 id="task-list-heading">Saved tasks</h3>
+              {tasksState.tasks.length === 0 ? (
+                <p className="empty-state">No tasks saved yet.</p>
+              ) : (
+                <ul className="task-list" aria-label="Saved tasks">
+                  {tasksState.tasks.map((task) => (
+                    <li key={task.id} className="task-card">
+                      <div>
+                        <h4>{task.title}</h4>
+                        {task.description === '' ? null : (
+                          <p>{task.description}</p>
+                        )}
+                      </div>
 
-              <div className="storage-status" role="status" aria-live="polite">
-                <span aria-hidden="true" />
-                Local storage connection ready
-              </div>
+                      <dl className="task-metadata" aria-label={`${task.title} details`}>
+                        <div>
+                          <dt>Due</dt>
+                          <dd>{task.dueDate === '' ? 'No date' : task.dueDate}</dd>
+                        </div>
+                        <div>
+                          <dt>Priority</dt>
+                          <dd>{priorityLabels[task.priority]}</dd>
+                        </div>
+                        <div>
+                          <dt>Status</dt>
+                          <dd>{task.completed ? 'Completed' : 'Active'}</dd>
+                        </div>
+                      </dl>
+
+                      <button
+                        type="button"
+                        className="secondary-action"
+                        onClick={() => {
+                          tasksState.startEdit(task.id);
+                        }}
+                      >
+                        Edit task
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </article>
           </section>
         </main>
