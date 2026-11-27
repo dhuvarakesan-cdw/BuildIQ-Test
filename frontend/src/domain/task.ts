@@ -54,7 +54,7 @@ const toTrimmedString = (value: unknown): string => (
   typeof value === 'string' ? value.trim() : ''
 );
 
-const isTaskPriority = (value: unknown): value is TaskPriority => (
+export const isTaskPriority = (value: unknown): value is TaskPriority => (
   typeof value === 'string' && TASK_PRIORITIES.includes(value as TaskPriority)
 );
 
