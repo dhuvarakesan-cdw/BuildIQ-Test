@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 
 import { Task } from '../../domain/task';
 import TaskList from './TaskList';
@@ -16,11 +16,41 @@ const createTaskFixture = (overrides: Partial<Task> = {}): Task => ({
 
 describe('TaskList', () => {
   /**
-   * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-004;
-   * AC-011: verifies only active past-due tasks receive the active-overdue
-   * visual state while completed past-due and no-due-date tasks do not.
+   * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-006;
+   * AC-014: verifies filter-specific empty states are rendered with status
+   * semantics when no task matches the selected filter.
    */
-  it('marks only active past-due tasks as active overdue', () => {
+  it.each([
+    ['all' as const, 'No tasks saved yet.'],
+    ['active' as const, 'No active tasks match this filter.'],
+    ['completed' as const, 'No completed tasks match this filter.'],
+  ])('shows the %s empty state', (filter, message) => {
+    render(
+      <TaskList
+        filter={filter}
+        today="2026-11-27"
+        tasks={[]}
+        onToggleCompletion={() => undefined}
+        onEdit={() => undefined}
+        onDelete={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole('status')).toHaveTextContent(message);
+    expect(screen.queryByRole('list', { name: 'Saved tasks' }))
+      .not.toBeInTheDocument();
+  });
+
+  /**
+   * run_id: 28e480edc100444a9a45357f6e97dcb1; task_id: TASK-006;
+   * AC-014: verifies task cards render no-due-date copy, metadata tags,
+   * accessible action labels, and overdue states.
+   */
+  it('renders task metadata, no-due-date copy, actions, and overdue states', () => {
+    const onToggleCompletion = jest.fn();
+    const onEdit = jest.fn();
+    const onDelete = jest.fn();
+
     render(
       <TaskList
         filter="all"
@@ -42,12 +72,13 @@ describe('TaskList', () => {
             title: 'Brainstorm ideas',
           }),
         ]}
-        onToggleCompletion={() => undefined}
-        onEdit={() => undefined}
-        onDelete={() => undefined}
+        onToggleCompletion={onToggleCompletion}
+        onEdit={onEdit}
+        onDelete={onDelete}
       />,
     );
 
+    const list = screen.getByRole('list', { name: 'Saved tasks' });
     const items = screen.getAllByRole('listitem');
 
     expect(items[0]).toHaveClass('task-card-overdue');
@@ -57,6 +88,21 @@ describe('TaskList', () => {
     expect(items[1]).toHaveAttribute('data-overdue', 'false');
     expect(items[2]).toHaveClass('task-card-active');
     expect(items[2]).toHaveAttribute('data-overdue', 'false');
-    expect(screen.getByText('No due date')).toBeInTheDocument();
+    expect(within(list).getByText('No due date')).toBeInTheDocument();
+    expect(within(list).getByText('Medium')).toBeInTheDocument();
+    expect(within(items[0]).getByRole('button', { name: 'Mark complete' }))
+      .toBeInTheDocument();
+    expect(within(items[0]).getByRole('button', { name: 'Edit task' }))
+      .toBeInTheDocument();
+    expect(within(items[0]).getByRole('button', { name: 'Delete task' }))
+      .toBeInTheDocument();
+
+    fireEvent.click(within(items[0]).getByRole('button', { name: 'Mark complete' }));
+    fireEvent.click(within(items[0]).getByRole('button', { name: 'Edit task' }));
+    fireEvent.click(within(items[0]).getByRole('button', { name: 'Delete task' }));
+
+    expect(onToggleCompletion).toHaveBeenCalledWith('task-1');
+    expect(onEdit).toHaveBeenCalledWith('task-1');
+    expect(onDelete).toHaveBeenCalledWith('task-1');
   });
 });
