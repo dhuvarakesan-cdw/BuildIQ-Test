@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import LocalDataNotice from './components/privacy/LocalDataNotice';
 import DeleteTaskDialog from './components/tasks/DeleteTaskDialog';
 import TaskForm from './components/tasks/TaskForm';
 import TaskFilters from './components/tasks/TaskFilters';
@@ -220,6 +221,8 @@ export default function App() {
             </p>
             <TaskSummary counts={tasksState.counts} />
           </section>
+
+          <LocalDataNotice />
 
           <section
             className="content-grid"
