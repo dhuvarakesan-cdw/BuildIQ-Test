@@ -1,0 +1,192 @@
+{
+  "featureId": "FEAT-001",
+  "name": "Task List Management",
+  "referenceDate": "2026-11-27",
+  "tasks": [
+    {
+      "id": "task-active-design-review",
+      "title": "Review design proposal",
+      "description": "Check the dashboard layout and leave implementation notes.",
+      "dueDate": "2026-12-05",
+      "priority": "medium",
+      "completed": false,
+      "createdAt": "2026-11-20T09:00:00.000Z"
+    },
+    {
+      "id": "task-completed-invoice",
+      "title": "Send vendor invoice",
+      "description": "Email the signed invoice to the finance contact.",
+      "dueDate": "2026-11-30",
+      "priority": "high",
+      "completed": true,
+      "createdAt": "2026-11-18T14:30:00.000Z"
+    },
+    {
+      "id": "task-overdue-renewal",
+      "title": "Renew software license",
+      "description": "Renew the team license before access expires.",
+      "dueDate": "2026-11-15",
+      "priority": "high",
+      "completed": false,
+      "createdAt": "2026-11-01T08:15:00.000Z"
+    },
+    {
+      "id": "task-completed-past-due-report",
+      "title": "Archive quarter report",
+      "description": "Move the approved quarter report into the archive folder.",
+      "dueDate": "2026-11-10",
+      "priority": "low",
+      "completed": true,
+      "createdAt": "2026-10-28T16:45:00.000Z"
+    },
+    {
+      "id": "task-no-due-date",
+      "title": "Collect reading recommendations",
+      "description": "Save useful articles for later planning.",
+      "dueDate": "",
+      "priority": "low",
+      "completed": false,
+      "createdAt": "2026-11-22T11:20:00.000Z"
+    }
+  ],
+  "createExamples": {
+    "fullDetailTask": {
+      "title": "Prepare launch checklist",
+      "description": "Confirm owners, dates, priority, and release readiness.",
+      "dueDate": "2026-12-12",
+      "priority": "high",
+      "completed": true
+    },
+    "noDueDateTask": {
+      "title": "Brainstorm backlog ideas",
+      "description": "Capture optional improvements without a scheduled date.",
+      "dueDate": "",
+      "priority": "medium",
+      "completed": false
+    },
+    "emptyTitleTask": {
+      "title": "",
+      "description": "This entry should not save because the title is empty.",
+      "dueDate": "2026-12-01",
+      "priority": "medium",
+      "completed": false
+    }
+  },
+  "editExamples": {
+    "savedUpdate": {
+      "title": "Review approved design proposal",
+      "description": "Update notes after stakeholder approval.",
+      "dueDate": "2026-12-08",
+      "priority": "high",
+      "completed": true
+    },
+    "canceledUpdate": {
+      "title": "Canceled title should not persist",
+      "description": "Canceled description should not persist.",
+      "dueDate": "2026-12-20",
+      "priority": "high",
+      "completed": true
+    },
+    "emptyTitleUpdate": {
+      "title": "",
+      "description": "This edit should not save because the title is empty.",
+      "dueDate": "2026-12-01",
+      "priority": "low",
+      "completed": false
+    }
+  },
+  "filters": [
+    "all",
+    "active",
+    "completed"
+  ],
+  "viewports": [
+    {
+      "name": "Desktop",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "name": "Mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "scenarios": {
+    "FAC-001": {
+      "name": "Create a task with every supported detail",
+      "taskIds": [
+        "task-active-design-review"
+      ]
+    },
+    "FAC-002": {
+      "name": "Reject empty titles while creating and editing",
+      "taskIds": [
+        "task-active-design-review"
+      ]
+    },
+    "FAC-003": {
+      "name": "Create a task without a due date",
+      "taskIds": [
+        "task-no-due-date"
+      ]
+    },
+    "FAC-004": {
+      "name": "Filter all, active, completed, and empty task lists",
+      "taskIds": [
+        "task-active-design-review",
+        "task-completed-invoice",
+        "task-overdue-renewal",
+        "task-completed-past-due-report",
+        "task-no-due-date"
+      ]
+    },
+    "FAC-005": {
+      "name": "Save and cancel task edits",
+      "taskIds": [
+        "task-active-design-review",
+        "task-no-due-date"
+      ]
+    },
+    "FAC-006": {
+      "name": "Confirm or cancel task deletion",
+      "taskIds": [
+        "task-completed-invoice",
+        "task-no-due-date"
+      ]
+    },
+    "FAC-007": {
+      "name": "Toggle tasks between active and completed filters",
+      "taskIds": [
+        "task-active-design-review",
+        "task-completed-invoice"
+      ]
+    },
+    "FAC-008": {
+      "name": "Distinguish active overdue tasks from non-overdue tasks",
+      "taskIds": [
+        "task-overdue-renewal",
+        "task-completed-past-due-report",
+        "task-no-due-date"
+      ]
+    },
+    "FAC-009": {
+      "name": "Complete task workflows using only the keyboard",
+      "taskIds": [
+        "task-active-design-review",
+        "task-completed-invoice",
+        "task-no-due-date"
+      ]
+    },
+    "FAC-010": {
+      "name": "Use task management on desktop and mobile viewports",
+      "taskIds": [
+        "task-active-design-review",
+        "task-completed-invoice",
+        "task-overdue-renewal",
+        "task-completed-past-due-report",
+        "task-no-due-date"
+      ]
+    }
+  }
+}
